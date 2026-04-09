@@ -80,14 +80,3 @@ comments
 2024-01-15 12:00:01 [INFO]   -> 500 rows upserted into 'comments'.
 2024-01-15 12:00:02 [INFO] ETL pipeline finished. Database: /path/to/data.db
 ```
-
----
-
-## Технические детали
-
-| Аспект | Решение |
-|---|---|
-| Идемпотентность | `INSERT … ON CONFLICT(id) DO UPDATE` (upsert) |
-| Порядок загрузки | `users → posts → comments` (соблюдение FK) |
-| Внешние ключи | Включены через `PRAGMA foreign_keys = ON` |
-| Зависимости | Только `requests`; `sqlite3` входит в стандартную библиотеку |

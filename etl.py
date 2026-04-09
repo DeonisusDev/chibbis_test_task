@@ -1,16 +1,12 @@
-"""
-ETL script: jsonplaceholder.typicode.com -> SQLite
-Supports idempotent re-runs (no duplicate data).
-"""
-
 import sqlite3
 import logging
 import sys
+import json
 from pathlib import Path
 
 import requests
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# Config
 
 BASE_URL = "https://jsonplaceholder.typicode.com"
 DB_PATH = Path("data.db")
@@ -28,7 +24,7 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-# ── Database ──────────────────────────────────────────────────────────────────
+# Database
 
 DDL = """
 CREATE TABLE IF NOT EXISTS users (
@@ -97,7 +93,7 @@ def init_db(conn: sqlite3.Connection) -> None:
     log.info("Database schema ready.")
 
 
-# ── Fetch ─────────────────────────────────────────────────────────────────────
+# Fetch
 
 def fetch(endpoint: str) -> list[dict]:
     url = BASE_URL + endpoint
@@ -109,7 +105,7 @@ def fetch(endpoint: str) -> list[dict]:
     return data
 
 
-# ── Transform ─────────────────────────────────────────────────────────────────
+# Transform
 
 def transform_users(raw: list[dict]) -> list[dict]:
     return [
@@ -121,8 +117,8 @@ def transform_users(raw: list[dict]) -> list[dict]:
             "phone":    r.get("phone"),
             "website":  r.get("website"),
             # Flatten nested objects to JSON strings for simplicity
-            "company":  str(r.get("company", {})),
-            "address":  str(r.get("address", {})),
+            "company":  json.dumps(r.get("company", {}), ensure_ascii=False),
+            "address":  json.dumps(r.get("address", {}), ensure_ascii=False),
         }
         for r in raw
     ]
@@ -160,7 +156,7 @@ TRANSFORMERS = {
 }
 
 
-# ── Load ──────────────────────────────────────────────────────────────────────
+# Load
 
 def load(conn: sqlite3.Connection, table: str, rows: list[dict]) -> None:
     conn.executemany(UPSERT[table], rows)
@@ -168,7 +164,7 @@ def load(conn: sqlite3.Connection, table: str, rows: list[dict]) -> None:
     log.info("  -> %d rows upserted into '%s'.", len(rows), table)
 
 
-# ── Pipeline ──────────────────────────────────────────────────────────────────
+# Pipeline
 
 def run() -> None:
     log.info("Starting ETL pipeline.")
