@@ -17,8 +17,8 @@
 
 ```bash
 # 1. Клонировать репозиторий
-git clone <repo-url>
-cd etl_project
+git clone https://github.com/DeonisusDev/chibbis_test_task.git
+cd chibbis_test_task
 
 # 2. Создать виртуальное окружение
 python -m venv .venv
